@@ -10,42 +10,62 @@
 
 	/* GREEN */
 	--green-bg: #4ade80;
+	--green-bg-contrast: #22c55e;
+	--green-bg-pale: #86efac;
 	--green-text: #ecfdf3;
 
 	/* YELLOW */
 	--yellow-bg: #facc15;
+	--yellow-bg-contrast: #eab308;
+	--yellow-bg-pale: #fde047;
 	--yellow-text: #fefce8;
 
 	/* RED */
 	--red-bg: #f87171;
+	--red-bg-contrast: #ef4444;
+	--red-bg-pale: #fca5a5;
 	--red-text: #fef2f2;
 
 	/* BLUE */
 	--blue-bg: #60a5fa;
+	--blue-bg-contrast: #3b82f6;
+	--blue-bg-pale: #93c5fd;
 	--blue-text: #eff6ff;
 
 	/* PURPLE */
 	--purple-bg: #c084fc;
+	--purple-bg-contrast: #a855f7;
+	--purple-bg-pale: #d8b4fe;
 	--purple-text: #faf5ff;
 
 	/* PINK */
 	--pink-bg: #f472b6;
+	--pink-bg-contrast: #ec4899;
+	--pink-bg-pale: #fbcfe8;
 	--pink-text: #fdf2f8;
 
 	/* ORANGE */
 	--orange-bg: #fb923c;
+	--orange-bg-contrast: #f97316;
+	--orange-bg-pale: #fdba74;
 	--orange-text: #fff7ed;
 
 	/* CYAN */
 	--cyan-bg: #22d3ee;
+	--cyan-bg-contrast: #06b6d4;
+	--cyan-bg-pale: #67e8f9;
 	--cyan-text: #ecfeff;
 
 	/* INDIGO */
 	--indigo-bg: #818cf8;
+	--indigo-bg-contrast: #6366f1;
+	--indigo-bg-pale: #a5b4fc;
 	--indigo-text: #eef2ff;
 
 	/* TEAL */
 	--teal-bg: #2dd4bf;
+	--teal-bg-contrast: #14b8a6;
+	--teal-bg-pale: #5eead4;
 	--teal-text: #f0fdfa;
 
 	/* SHADOWS */

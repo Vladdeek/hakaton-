@@ -38,40 +38,46 @@ import React, { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { DefaultButton, ToggleButton } from './Buttons'
 import { DefaultInput, IconInput, NumberInput, WeekDayInput } from './Inputs'
+import { CreateHabit } from '../api/HabitsAPI'
 
-const ToolBar = () => {
-	const location = useLocation()
-	return (
-		<div className=' w-full h-18 fixed bottom-0 p-2'>
-			<div className='glass w-full h-full rounded-xl grid grid-cols-3'>
-				<NavLink
-					to={'habits'}
-					className={`flex items-center justify-center  ${location.pathname === '/habits' ? 'text-[var(--hero)]' : 'text-white'} transition-all`}
-				>
-					<Calendar />
-				</NavLink>
-				<div className='flex  items-center justify-center text-white'>
-					<div className='flex justify-center items-center h-[75%] w-[75%] active:h-[90%] active:w-[90%] hero-glass rounded-full transition-all'>
-						<Plus />
-					</div>
-				</div>
-				<NavLink
-					to={'pomodora'}
-					className={`flex items-center justify-center  ${location.pathname === '/pomodora' ? 'text-[var(--hero)]' : 'text-white'} transition-all`}
-				>
-					<Timer />
-				</NavLink>
-			</div>
-		</div>
-	)
+const iconMap = {
+	circle: Circle,
+	triangle: Triangle,
+	square: Square,
+	dumbbell: Dumbbell,
+	bubbles: Bubbles,
+	pill: Pill,
+	apple: Apple,
+	brain: Brain,
+	biceps: BicepsFlexed,
+	bed: BedSingle,
+	book: BookOpen,
+	gamepad: Gamepad,
+	scroll: ScrollText,
+	coffee: Coffee,
+	cigarette: Cigarette,
+	wine: Wine,
+	music: Music,
+	phone: Smartphone,
+	sun: SunMedium,
+	flame: Flame,
+	heart: Heart,
+	trash: Trash,
+	bag: ShoppingBag,
+	shield: Shield,
+	target: Target,
+	clock: Clock,
+	zap: Zap,
+	cigarette_off: CigaretteOff,
 }
 
 const Preview = ({ icon, title }) => {
-	console.log(icon)
+	const IconComponent = icon?.icon ? iconMap[icon.icon] : null
+
 	return (
 		<div className='w-full flex flex-col justify-center items-center'>
 			<div
-				className='w-25 h-25 flex items-center justify-center rounded-full '
+				className='w-25 h-25 flex items-center justify-center rounded-full'
 				style={{
 					background:
 						icon?.color !== null
@@ -83,14 +89,13 @@ const Preview = ({ icon, title }) => {
 							: 'var(--middle-secondary)',
 				}}
 			>
-				{icon?.icon ? (
-					React.cloneElement(icon.icon, {
-						className: 'w-1/2 h-1/2',
-					})
+				{IconComponent ? (
+					<IconComponent className='w-1/2 h-1/2' />
 				) : (
 					<ImageOff className='w-1/2 h-1/2' />
 				)}
 			</div>
+
 			<p className='text-xl font-semibold text-[var(--secondary)]'>
 				{title || 'Название привычки'}
 			</p>
@@ -98,12 +103,20 @@ const Preview = ({ icon, title }) => {
 	)
 }
 
-const CreateButton = () => {
+const CreateModal = ({ show }) => {
 	const [selected, setSelected] = useState(0)
 	const [showModal, setShowModal] = useState(false)
 	const [showInfo, setShowInfo] = useState(false)
 	const [title, setTitle] = useState('')
+	const [weekDays, setWeekDays] = useState([])
+	const [logToComplete, setLogToComplete] = useState(1)
 	const [icon, setIcon] = useState({})
+
+	useEffect(() => {
+		if (show === true) {
+			setShowModal(show)
+		}
+	}, [show])
 	const option = [
 		{
 			id: 0,
@@ -129,6 +142,31 @@ const CreateButton = () => {
 			document.body.style.overflow = ''
 		}
 	}, [showModal])
+
+	const handleCreateHabit = async () => {
+		try {
+			const data = {
+				title,
+				days_to_log: weekDays,
+				type: selected === 0 ? 'good' : 'bad',
+				icon_url: icon?.icon,
+				color: icon.color,
+				logs_to_complete: logToComplete,
+			}
+			const res = await CreateHabit(data)
+
+			setShowModal(false)
+		} catch (e) {
+			console.error(e)
+		}
+	}
+
+	useEffect(() => {
+		if (selected === 1) {
+			setWeekDays([0, 1, 2, 3, 4, 5, 6])
+			setLogToComplete(1)
+		}
+	}, [selected])
 
 	return (
 		<>
@@ -228,29 +266,24 @@ const CreateButton = () => {
 									<IconInput onChange={setIcon} />
 									{selected === 0 && (
 										<>
-											<WeekDayInput />
-											<NumberInput />
+											<WeekDayInput onChange={setWeekDays} />
+											<NumberInput onChange={setLogToComplete} />
 										</>
 									)}
 								</div>
 							</div>
 							<div className='absolute bottom-0 w-full'>
-								<DefaultButton title={'Создать'} />
+								<DefaultButton
+									onClick={handleCreateHabit}
+									title={'Создать'}
+									disabled={!title.length > 0 || !icon?.icon}
+								/>
 							</div>
 						</div>
 					</div>
 				</div>
 			)}
-
-			<div className='fixed bottom-0 w-full h-20 flex justify-center items-center'>
-				<div
-					onClick={() => setShowModal(true)}
-					className=' h-15 w-15 active:h-17.5 active:w-17.5 flex justify-center items-center text-white bg-[var(--hero)] rounded-full transition-all'
-				>
-					<Plus />
-				</div>
-			</div>
 		</>
 	)
 }
-export default CreateButton
+export default CreateModal

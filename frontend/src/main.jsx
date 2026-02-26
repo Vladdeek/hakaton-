@@ -13,6 +13,7 @@ import { Toaster } from 'react-hot-toast'
 import DashboardLayout from './pages/layout/DashboardLayout'
 import PomodoraTimer from './pages/PomodoraTimer'
 import HabitTracker from './pages/HabitTracker'
+import Authorization from './pages/Authorization'
 
 function MainApp() {
 	return (
@@ -24,6 +25,7 @@ function MainApp() {
 			}
 		>
 			<Routes>
+				<Route path='/auth' element={<Authorization />} />
 				<Route path='/' element={<DashboardLayout />}>
 					<Route path='pomodora' element={<PomodoraTimer />}></Route>
 					<Route path='habits' element={<HabitTracker />}></Route>

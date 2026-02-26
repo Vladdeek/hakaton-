@@ -20,10 +20,13 @@ export const { API, FILE_API } = config[env]
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-const api = axios.create()
+const api = axios.create({
+	withCredentials: true,
+})
 
 const showError = status => {
 	const messages = {
+		401: 'Ошибка авторизации',
 		403: 'Доступ запрещён',
 		404: 'Ничего не найдено',
 		500: 'Сервер временно умер',
@@ -34,6 +37,25 @@ const showError = status => {
 	})
 }
 
+const getCookie = name => {
+	const cookies = document.cookie ? document.cookie.split('; ') : []
+	for (let c of cookies) {
+		const [k, ...v] = c.split('=')
+		if (k === name) return decodeURIComponent(v.join('='))
+	}
+	return null
+}
+
+api.interceptors.request.use(config => {
+	const csrf = getCookie('csrftoken')
+
+	if (csrf) {
+		config.headers['X-CSRF-TOKEN'] = csrf
+	}
+
+	return config
+})
+
 api.interceptors.response.use(
 	r => r,
 	error => {
@@ -41,8 +63,9 @@ api.interceptors.response.use(
 			return Promise.reject(error)
 		}
 
-		if (error.response?.status === 498) {
-			return api(error.config)
+		if (error.response?.status === 401) {
+			window.location.href = '/auth'
+			return Promise.reject(error)
 		}
 
 		const status = error.response?.status || 500

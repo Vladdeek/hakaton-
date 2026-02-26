@@ -11,6 +11,8 @@ import {
 	Clock,
 	Coffee,
 	Dumbbell,
+	Eye,
+	EyeClosed,
 	Flame,
 	Gamepad,
 	Heart,
@@ -30,7 +32,7 @@ import {
 	Wine,
 	Zap,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export const DefaultInput = ({
 	label,
@@ -40,13 +42,14 @@ export const DefaultInput = ({
 	disabled = false,
 }) => {
 	const [isFocus, setIsFocus] = useState(false)
+	const [showPassword, setShowPassword] = useState(false)
 	return (
 		<div className='relative w-full h-fit mt-5'>
 			{/* Input */}
 			<input
 				onFocus={() => setIsFocus(true)}
 				onBlur={() => setIsFocus(false)}
-				type={type}
+				type={type === 'password' ? (showPassword ? 'text' : 'password') : type}
 				value={value}
 				onChange={onChange}
 				disabled={disabled}
@@ -71,11 +74,19 @@ export const DefaultInput = ({
 					{label}
 				</label>
 			)}
+			{type === 'password' && (
+				<div
+					onClick={() => setShowPassword(prev => !prev)}
+					className='absolute top-0 h-11 right-3 flex justify-center items-center text-[var(--middle-secondary)]'
+				>
+					{showPassword ? <Eye size={18} /> : <EyeClosed size={18} />}
+				</div>
+			)}
 		</div>
 	)
 }
 
-export const WeekDayInput = ({ disabled }) => {
+export const WeekDayInput = ({ disabled, onChange }) => {
 	const colors = [
 		'green',
 		'yellow',
@@ -113,6 +124,17 @@ export const WeekDayInput = ({ disabled }) => {
 			return acc
 		}, {}),
 	)
+	const activeDays = useMemo(
+		() =>
+			Object.keys(days)
+				.filter(key => days[key].active)
+				.map(Number),
+		[days],
+	)
+
+	useEffect(() => {
+		onChange?.(activeDays)
+	}, [activeDays])
 
 	return (
 		<div
@@ -192,66 +214,66 @@ export const IconInput = ({ onChange }) => {
 		return copy
 	}
 
-	const shuffledColors = shuffle(colors)
+	const shuffledColors = useMemo(() => shuffle(colors), [])
 
 	const initialIcons = [
-		<Circle />,
-		<Triangle />,
-		<Square />,
-		<Dumbbell />,
-		<Bubbles />,
-		<Pill />,
-		<Apple />,
-		<Brain />,
-		<BicepsFlexed />,
-		<BedSingle />,
-		<BookOpen />,
-		<Gamepad />,
-		<ScrollText />,
-		<Coffee />,
-		<Cigarette />,
-		<Wine />,
-		<Music />,
-		<Smartphone />,
-		<SunMedium />,
-		<Flame />,
-		<Heart />,
-		<Trash />,
-		<ShoppingBag />,
-		<Shield />,
-		<Target />,
-		<Clock />,
-		<Zap />,
-		<CigaretteOff />,
+		{ name: 'circle', icon: <Circle /> },
+		{ name: 'triangle', icon: <Triangle /> },
+		{ name: 'square', icon: <Square /> },
+		{ name: 'dumbbell', icon: <Dumbbell /> },
+		{ name: 'bubbles', icon: <Bubbles /> },
+		{ name: 'pill', icon: <Pill /> },
+		{ name: 'apple', icon: <Apple /> },
+		{ name: 'brain', icon: <Brain /> },
+		{ name: 'biceps', icon: <BicepsFlexed /> },
+		{ name: 'bed', icon: <BedSingle /> },
+		{ name: 'book', icon: <BookOpen /> },
+		{ name: 'gamepad', icon: <Gamepad /> },
+		{ name: 'scroll', icon: <ScrollText /> },
+		{ name: 'coffee', icon: <Coffee /> },
+		{ name: 'cigarette', icon: <Cigarette /> },
+		{ name: 'wine', icon: <Wine /> },
+		{ name: 'music', icon: <Music /> },
+		{ name: 'phone', icon: <Smartphone /> },
+		{ name: 'sun', icon: <SunMedium /> },
+		{ name: 'flame', icon: <Flame /> },
+		{ name: 'heart', icon: <Heart /> },
+		{ name: 'trash', icon: <Trash /> },
+		{ name: 'bag', icon: <ShoppingBag /> },
+		{ name: 'shield', icon: <Shield /> },
+		{ name: 'target', icon: <Target /> },
+		{ name: 'clock', icon: <Clock /> },
+		{ name: 'zap', icon: <Zap /> },
+		{ name: 'cigarette_off', icon: <CigaretteOff /> },
 	]
 
 	const [selected, setSelected] = useState(null)
 	const [selectedColor, setSelectedColor] = useState(null)
-	const [icons, setIcons] = useState({})
+
+	const icons = useMemo(() => {
+		return initialIcons.reduce((acc, item, index) => {
+			acc[index] = {
+				name: item.name,
+				icon: item.icon,
+				color:
+					selectedColor !== null
+						? colors[selectedColor]
+						: shuffledColors[index % shuffledColors.length],
+			}
+			return acc
+		}, {})
+	}, [selectedColor, shuffledColors])
 
 	useEffect(() => {
-		setIcons(
-			initialIcons.reduce((acc, icon, index) => {
-				acc[index] = {
-					icon,
-					color:
-						selectedColor !== null
-							? colors[selectedColor]
-							: shuffledColors[index % shuffledColors.length],
-				}
-				return acc
-			}, {}),
+		onChange?.(
+			selected === null
+				? { icon: null, color: null }
+				: {
+						icon: icons[selected].name,
+						color: icons[selected].color,
+					},
 		)
-	}, [selectedColor])
-
-	useEffect(() => {
-		const empty = { icon: null, color: null }
-		if (selected !== null) {
-			onChange?.(icons[selected])
-		} else if (selected === null) {
-			onChange?.(empty)
-		}
-	}, [selected, icons])
+	}, [selected, selectedColor])
 
 	return (
 		<div className='flex flex-col gap-1 p-2 rounded-2xl shadow-sm border border-[var(--bg-border)]'>
