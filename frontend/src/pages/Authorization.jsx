@@ -70,7 +70,7 @@ const Authorization = () => {
 		if (selected === 0) {
 			try {
 				const data = await LoginAPI({ login, password })
-				navigate('/')
+				navigate('/habits')
 			} catch (e) {}
 		} else if (selected === 1) {
 			try {
@@ -79,7 +79,7 @@ const Authorization = () => {
 					password,
 					passwordRepeat,
 				})
-				navigate('/')
+				navigate('/habits')
 			} catch (e) {}
 		}
 	}

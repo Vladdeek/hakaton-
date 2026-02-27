@@ -84,6 +84,7 @@
 :root[data-theme='dark'] {
 	--bg: #262626;
 	--secondary: #efefef;
+	--yellow: #fb9a24;
 	--hero: rgb(255, 0, 119);
 	--hero-pale: rgb(255, 223, 237);
 	--gray-text: #323232;

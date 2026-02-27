@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { GetUserHabits } from '../api/HabitsAPI'
+import { GetUserHabits, LogHabit } from '../api/HabitsAPI'
 import {
 	Calendar,
 	ImageOff,
@@ -17,7 +17,6 @@ import {
 	Clock,
 	Coffee,
 	Dumbbell,
-	Flame,
 	Gamepad,
 	Heart,
 	Music,
@@ -35,106 +34,150 @@ import {
 	Zap,
 	Info,
 	CigaretteOff,
-	FlameIcon,
 	Minus,
 	Check,
 } from 'lucide-react'
+import { initialIcons } from '../data/icons'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 
-const iconMap = {
-	circle: Circle,
-	triangle: Triangle,
-	square: Square,
-	dumbbell: Dumbbell,
-	bubbles: Bubbles,
-	pill: Pill,
-	apple: Apple,
-	brain: Brain,
-	biceps: BicepsFlexed,
-	bed: BedSingle,
-	book: BookOpen,
-	gamepad: Gamepad,
-	scroll: ScrollText,
-	coffee: Coffee,
-	cigarette: Cigarette,
-	wine: Wine,
-	music: Music,
-	phone: Smartphone,
-	sun: SunMedium,
-	flame: Flame,
-	heart: Heart,
-	trash: Trash,
-	bag: ShoppingBag,
-	shield: Shield,
-	target: Target,
-	clock: Clock,
-	zap: Zap,
-	cigarette_off: CigaretteOff,
-}
-const CircleProgress = ({ total, value, color }) => {
+const CircleProgress = ({ total, value, color, size = 60, onClick }) => {
 	const percent = total ? Math.min((value / total) * 100, 100) : 0
 
-	const radius = 40
-	const stroke = 10
-	const normalizedRadius = radius - stroke * 0.5
-	const circumference = normalizedRadius * 2 * Math.PI
-
-	const strokeDashoffset = circumference - (percent / 100) * circumference
+	const stroke = 6
+	const radius = 50 - stroke
+	const circumference = 2 * Math.PI * radius
+	const offset = circumference - (percent / 100) * circumference
 
 	return (
-		<div className='flex justify-center items-center w-full h-full'>
-			<svg className='w-full h-full' viewBox='0 0 100 100'>
+		<div
+			onClick={onClick}
+			style={{ width: size, height: size }}
+			className='relative cursor-pointer active:scale-105 transition-transform'
+		>
+			<svg viewBox='0 0 100 100' className='w-full h-full'>
 				<circle
+					cx='50'
+					cy='50'
+					r={radius}
 					stroke={`var(--${color}-bg-pale)`}
-					fill='transparent'
 					strokeWidth={stroke}
-					r={normalizedRadius}
-					cx='50'
-					cy='50'
+					fill='none'
 				/>
 
 				<circle
-					stroke={`var(--${color}-text)`}
-					fill='transparent'
-					strokeWidth={stroke}
-					strokeDasharray={circumference}
-					strokeDashoffset={strokeDashoffset}
-					strokeLinecap='round'
-					r={normalizedRadius}
 					cx='50'
 					cy='50'
-					style={{
-						transition: 'stroke-dashoffset 0.3s ease',
-						transform: 'rotate(-90deg)',
-						transformOrigin: '50% 50%',
-					}}
+					r={radius}
+					stroke={`var(--${color}-text)`}
+					strokeWidth={stroke}
+					fill='none'
+					strokeDasharray={circumference}
+					strokeDashoffset={offset}
+					strokeLinecap='round'
+					style={{ transition: '0.3s' }}
+					transform='rotate(-90 50 50)'
 				/>
-
-				<text
-					x='50'
-					y='50'
-					textAnchor='middle'
-					dy='0.35em'
-					fontSize='18'
-					fill={`var(--${color}-text)`}
-					fontWeight='600'
-				>
-					{value}/{total}
-				</text>
 			</svg>
+
+			<div
+				className={`absolute inset-0 flex items-center justify-center rounded-full ${value === total ? 'opacity-100' : 'opacity-50'}  active:opacity-100 transition-all`}
+				style={{
+					background: `var(--${color}-text)`,
+					color: `var(--${color}-bg)`,
+				}}
+			>
+				{value === total ? (
+					<Check size={size * 0.45} strokeWidth={2.2} />
+				) : (
+					<Plus size={size * 0.45} strokeWidth={2.2} />
+				)}
+			</div>
+		</div>
+	)
+}
+
+const Flames = ({ size = 18, className = '', streakCount, bgColor }) => {
+	const getFlameData = streak => {
+		const levels = [
+			{ min: 300, img: '/flames/7.png', color: '#00d9ff' },
+			{ min: 200, img: '/flames/6.png', color: '#0095ff' },
+			{ min: 100, img: '/flames/5.png', color: '#9a1dde' },
+			{ min: 50, img: '/flames/4.png', color: '#ff00b3' },
+			{ min: 30, img: '/flames/3.png', color: '#ff2457' },
+			{ min: 10, img: '/flames/2.png', color: '#ff8000' },
+		]
+
+		const level = levels.find(l => streak >= l.min) || {
+			img: '/flames/1.png',
+			color: '#ffae00',
+		}
+
+		// затемняем цвет для тени
+		const darken = (hex, amount = 0.25) => {
+			const num = parseInt(hex.replace('#', ''), 16)
+			let r = (num >> 16) & 255
+			let g = (num >> 8) & 255
+			let b = num & 255
+
+			r = Math.floor(r * (1 - amount))
+			g = Math.floor(g * (1 - amount))
+			b = Math.floor(b * (1 - amount))
+
+			return `rgb(${r}, ${g}, ${b})`
+		}
+
+		return {
+			...level,
+			shadow: darken(level.color, 0.1),
+		}
+	}
+	const { img, color, shadow } = getFlameData(streakCount)
+
+	return (
+		<div
+			className={`flex gap-1 items-center px-2 rounded-full`}
+			style={{ background: `var(--${bgColor}-bg-pale)` }}
+		>
+			<img
+				style={{ width: size, height: size }}
+				className={className}
+				src={img}
+				alt=''
+			/>
+
+			<p
+				style={{
+					color,
+				}}
+				className='font-semibold text-lg pt-1'
+			>
+				{streakCount}
+			</p>
 		</div>
 	)
 }
 
 const HabitCard = ({
+	id,
 	icon,
 	color,
 	title,
 	flame = 0,
 	logsCount,
-	completeLog,
+	currentLog,
+	onUpdate,
 }) => {
-	const IconComponent = icon ? iconMap[icon] : null
-	const [completeLogs, setCompleteLogs] = useState(0)
+	const iconPath = icon
+		? initialIcons.find(i => i.name === icon)?.icon_path
+		: null
+
+	const updateLog = () => {
+		try {
+			LogHabit(id)
+			onUpdate?.(true)
+		} catch (e) {}
+	}
+
 	return (
 		<div
 			className='w-full h-auto aspect-square flex flex-col justify-between rounded-4xl p-2 shadow-lg'
@@ -142,8 +185,8 @@ const HabitCard = ({
 				background: `linear-gradient(to bottom, var(--${color}-bg), var(--${color}-bg-contrast))`,
 			}}
 		>
-			<div className='flex justify-start items-center gap-3 h-1/4 w-full'>
-				{IconComponent && (
+			<div className='flex justify-between items-center gap-1 h-1/4 w-full'>
+				{iconPath && (
 					<div
 						className='rounded-full flex items-center justify-center h-full w-auto aspect-square'
 						style={{
@@ -151,15 +194,19 @@ const HabitCard = ({
 							color: `var(--${color}-text)`,
 						}}
 					>
-						<IconComponent className='w-2/3 h-2/3' />
+						<img className='p-3' src={iconPath} alt='' />
 					</div>
 				)}
-				<div className='flex items-center gap-1 h-2/5'>
-					<FlameIcon className='h-full w-auto text-amber-400 opacity-75' />
-					<p className='text-amber-400 opacity-75 text-lg pt-1'>{flame}</p>
+				<div className='flex items-center gap-1 h-2/5 mr-1'>
+					<Flames
+						size={24}
+						className={'grayscale-0'}
+						streakCount={flame}
+						bgColor={color}
+					/>
 				</div>
 			</div>
-			<div className='flex flex-col gap-3 items-center h-3/4 w-full'>
+			<div className='flex flex-col justify-between items-center h-3/4 w-full'>
 				<p
 					className='font-semibold text-xl'
 					style={{
@@ -168,112 +215,98 @@ const HabitCard = ({
 				>
 					{title}
 				</p>
-				{logsCount === completeLog ? (
-					<>
-						<Check
-							className='rounded-full w-auto h-full p-4'
-							style={{
-								background: `var(--${color}-text)`,
-								color: `var(--${color}-bg)`,
-							}}
-						/>
-						<p
-							className='font-light text-xs opacity-75'
-							style={{
-								color: `var(--${color}-text)`,
-							}}
-						>
-							Completed
-						</p>
-					</>
-				) : (
-					<>
-						{logsCount > 1 ? (
-							<>
-								<div className='grid grid-cols-4 items-center w-full h-full'>
-									<div className='flex justify-center col-span-1'>
-										<Minus
-											onClick={() => setCompleteLogs(prev => prev - 1)}
-											className='rounded-full aspect-square w-3/4 h-auto'
-											style={{
-												background: `var(--${color}-bg-pale)`,
-												color: `var(--${color}-text)`,
-											}}
-										/>
-									</div>
-
-									<div className='flex justify-center w-full col-span-2'>
-										<CircleProgress
-											total={logsCount}
-											value={completeLogs}
-											color={color}
-										/>
-									</div>
-
-									<div className='flex justify-center col-span-1'>
-										<Plus
-											onClick={() => setCompleteLogs(prev => prev + 1)}
-											className='rounded-full aspect-square w-3/4 h-auto'
-											style={{
-												background: `var(--${color}-text)`,
-												color: `var(--${color}-bg)`,
-											}}
-										/>
-									</div>
-								</div>
-							</>
-						) : (
-							<>
-								<Plus
-									className='rounded-full w-auto h-full'
-									style={{
-										background: `var(--${color}-text)`,
-										color: `var(--${color}-bg)`,
-									}}
-								/>
-								<p
-									className='font-light text-xs opacity-75'
-									style={{
-										color: `var(--${color}-text)`,
-									}}
-								>
-									Tap to Log
-								</p>
-							</>
-						)}
-					</>
-				)}
+				<CircleProgress
+					total={logsCount}
+					value={currentLog}
+					color={color}
+					onClick={() => updateLog()}
+				/>
+				<p
+					className='font-light text-xs opacity-75'
+					style={{
+						color: `var(--${color}-text)`,
+					}}
+				>
+					{currentLog !== logsCount
+						? logsCount > 1
+							? `${currentLog} / ${logsCount}`
+							: 'Tap to Log'
+						: 'Complete'}
+				</p>
 			</div>
 		</div>
 	)
 }
 
 const HabitTracker = () => {
+	const location = useLocation()
+	const navigate = useNavigate()
+	const [updates, setUpdates] = useState(false)
+
 	const [habits, setHabits] = useState(null)
+	const Option = [
+		{ title: 'Сегодня', query: 'today', activeColor: 'teal' },
+		{ title: 'Все', query: 'all', activeColor: 'pink' },
+	]
+
+	const searchParams = new URLSearchParams(location.search)
+	const tab = searchParams.get('tab') || 'all'
+
+	useEffect(() => {
+		if (!location.search) {
+			navigate('/habits?tab=today', { replace: true })
+		}
+	}, [location.search])
 
 	useEffect(() => {
 		const load = async () => {
 			try {
-				const data = await GetUserHabits()
+				const data = await GetUserHabits(tab)
 				setHabits(data)
+				setUpdates(false)
 			} catch (e) {}
 		}
-
 		load()
-	}, [])
+	}, [tab, updates])
 
 	return (
-		<div className='grid grid-cols-2 gap-3'>
-			{habits?.map(item => (
-				<HabitCard
-					icon={item.icon_url}
-					color={item.color}
-					title={item.title}
-					logsCount={item.logs_to_complete}
-					completeLog={0}
-				/>
-			))}
-		</div>
+		<>
+			<div className='flex gap-3 mb-3'>
+				{Option?.map(item => (
+					<NavLink
+						key={item.query}
+						to={`/habits?tab=${item.query}`}
+						style={{
+							background:
+								tab === item.query
+									? `var(--${item.activeColor}-text)`
+									: 'var(--middle-bg)',
+							color:
+								tab === item.query
+									? `var(--${item.activeColor}-bg)`
+									: 'var(--middle-secondary)',
+						}}
+						className='px-4 py-1 rounded-full text-lg'
+					>
+						{item.title}
+					</NavLink>
+				))}
+			</div>
+			<div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3'>
+				{habits?.map(item => (
+					<HabitCard
+						id={item.id}
+						icon={item.icon_url}
+						color={item.color}
+						title={item.title}
+						logsCount={item.logs_to_complete}
+						currentLog={item.current_logs}
+						flame={item.current_streak}
+						onUpdate={setUpdates}
+					/>
+				))}
+			</div>
+		</>
 	)
 }
 export default HabitTracker

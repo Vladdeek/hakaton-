@@ -33,6 +33,7 @@ import {
 	Zap,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { initialIcons } from '../data/icons'
 
 export const DefaultInput = ({
 	label,
@@ -216,37 +217,6 @@ export const IconInput = ({ onChange }) => {
 
 	const shuffledColors = useMemo(() => shuffle(colors), [])
 
-	const initialIcons = [
-		{ name: 'circle', icon: <Circle /> },
-		{ name: 'triangle', icon: <Triangle /> },
-		{ name: 'square', icon: <Square /> },
-		{ name: 'dumbbell', icon: <Dumbbell /> },
-		{ name: 'bubbles', icon: <Bubbles /> },
-		{ name: 'pill', icon: <Pill /> },
-		{ name: 'apple', icon: <Apple /> },
-		{ name: 'brain', icon: <Brain /> },
-		{ name: 'biceps', icon: <BicepsFlexed /> },
-		{ name: 'bed', icon: <BedSingle /> },
-		{ name: 'book', icon: <BookOpen /> },
-		{ name: 'gamepad', icon: <Gamepad /> },
-		{ name: 'scroll', icon: <ScrollText /> },
-		{ name: 'coffee', icon: <Coffee /> },
-		{ name: 'cigarette', icon: <Cigarette /> },
-		{ name: 'wine', icon: <Wine /> },
-		{ name: 'music', icon: <Music /> },
-		{ name: 'phone', icon: <Smartphone /> },
-		{ name: 'sun', icon: <SunMedium /> },
-		{ name: 'flame', icon: <Flame /> },
-		{ name: 'heart', icon: <Heart /> },
-		{ name: 'trash', icon: <Trash /> },
-		{ name: 'bag', icon: <ShoppingBag /> },
-		{ name: 'shield', icon: <Shield /> },
-		{ name: 'target', icon: <Target /> },
-		{ name: 'clock', icon: <Clock /> },
-		{ name: 'zap', icon: <Zap /> },
-		{ name: 'cigarette_off', icon: <CigaretteOff /> },
-	]
-
 	const [selected, setSelected] = useState(null)
 	const [selectedColor, setSelectedColor] = useState(null)
 
@@ -254,7 +224,7 @@ export const IconInput = ({ onChange }) => {
 		return initialIcons.reduce((acc, item, index) => {
 			acc[index] = {
 				name: item.name,
-				icon: item.icon,
+				icon_path: item.icon_path,
 				color:
 					selectedColor !== null
 						? colors[selectedColor]
@@ -290,12 +260,12 @@ export const IconInput = ({ onChange }) => {
 							filter:
 								selected === key &&
 								`drop-shadow(1px 2px 3px var(--${value.color}-shadow))`,
-							backgroundColor: `var(--${value.color}-bg)`,
+							background: `linear-gradient(to bottom, var(--${value.color}-bg), var(--${value.color}-bg-contrast))`,
 							color: `var(--${value.color}-text)`,
 						}}
 						className={`flex justify-center items-center rounded-2xl font-semibold aspect-square h-auto w-full transition-all ${selected === key ? 'scale-105' : `${selected !== null && 'grayscale-25 opacity-50'}`}`}
 					>
-						{value.icon}
+						<img className='p-5' src={value.icon_path} alt='' />
 					</div>
 				))}
 			</div>

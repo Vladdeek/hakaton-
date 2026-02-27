@@ -39,40 +39,12 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { DefaultButton, ToggleButton } from './Buttons'
 import { DefaultInput, IconInput, NumberInput, WeekDayInput } from './Inputs'
 import { CreateHabit } from '../api/HabitsAPI'
-
-const iconMap = {
-	circle: Circle,
-	triangle: Triangle,
-	square: Square,
-	dumbbell: Dumbbell,
-	bubbles: Bubbles,
-	pill: Pill,
-	apple: Apple,
-	brain: Brain,
-	biceps: BicepsFlexed,
-	bed: BedSingle,
-	book: BookOpen,
-	gamepad: Gamepad,
-	scroll: ScrollText,
-	coffee: Coffee,
-	cigarette: Cigarette,
-	wine: Wine,
-	music: Music,
-	phone: Smartphone,
-	sun: SunMedium,
-	flame: Flame,
-	heart: Heart,
-	trash: Trash,
-	bag: ShoppingBag,
-	shield: Shield,
-	target: Target,
-	clock: Clock,
-	zap: Zap,
-	cigarette_off: CigaretteOff,
-}
+import { initialIcons } from '../data/icons'
 
 const Preview = ({ icon, title }) => {
-	const IconComponent = icon?.icon ? iconMap[icon.icon] : null
+	const selectedIcon = icon?.icon
+		? initialIcons.find(i => i.name === icon.icon)
+		: null
 
 	return (
 		<div className='w-full flex flex-col justify-center items-center'>
@@ -81,7 +53,7 @@ const Preview = ({ icon, title }) => {
 				style={{
 					background:
 						icon?.color !== null
-							? `var(--${icon.color}-bg)`
+							? `linear-gradient(to bottom, var(--${icon.color}-bg), var(--${icon.color}-bg-contrast))`
 							: 'var(--middle-bg)',
 					color:
 						icon?.color !== null
@@ -89,8 +61,12 @@ const Preview = ({ icon, title }) => {
 							: 'var(--middle-secondary)',
 				}}
 			>
-				{IconComponent ? (
-					<IconComponent className='w-1/2 h-1/2' />
+				{selectedIcon ? (
+					<img
+						src={selectedIcon.icon_path}
+						alt={selectedIcon.name}
+						className='p-5'
+					/>
 				) : (
 					<ImageOff className='w-1/2 h-1/2' />
 				)}
@@ -103,7 +79,7 @@ const Preview = ({ icon, title }) => {
 	)
 }
 
-const CreateModal = ({ show }) => {
+const CreateModal = ({ show, notShow }) => {
 	const [selected, setSelected] = useState(0)
 	const [showModal, setShowModal] = useState(false)
 	const [showInfo, setShowInfo] = useState(false)
@@ -116,7 +92,10 @@ const CreateModal = ({ show }) => {
 		if (show === true) {
 			setShowModal(show)
 		}
-	}, [show])
+		if (showModal === false) {
+			notShow?.(false)
+		}
+	}, [show, showModal])
 	const option = [
 		{
 			id: 0,
@@ -174,7 +153,7 @@ const CreateModal = ({ show }) => {
 				<div className='relative w-screen h-screen flex justify-center items-center backdrop-blur-xs bg-[#15151525] z-10'>
 					{showInfo && (
 						<div className='relative w-screen h-screen flex justify-center items-center  backdrop-blur-xs bg-[#15151525] z-20 '>
-							<div className='absolute w-[95vw] h-[55vh] overflow-hidden flex flex-col rounded-2xl bg-[var(--bg)] shadow-xl z-21 p-2'>
+							<div className='absolute w-[95vw] md:w-[35vw] h-[55vh] overflow-hidden flex flex-col rounded-2xl bg-[var(--bg)] shadow-xl z-21 p-2'>
 								<div className='flex justify-end items-center w-full mb-2'>
 									<X
 										onClick={() => setShowInfo(false)}
@@ -235,7 +214,7 @@ const CreateModal = ({ show }) => {
 							</div>
 						</div>
 					)}
-					<div className='absolute w-[95vw] h-[75vh] flex flex-col rounded-2xl bg-[var(--bg)] shadow-xl z-11 p-2'>
+					<div className='absolute md:w-[50vh]  xl:w-[30vw] w-[95vw] h-[75vh] flex flex-col rounded-2xl bg-[var(--bg)] shadow-xl z-11 p-2'>
 						<div className='flex justify-end items-center w-full mb-2'>
 							<Info
 								onClick={() => setShowInfo(true)}
